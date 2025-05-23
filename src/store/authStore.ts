@@ -19,33 +19,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ loading: true, error: null });
     try {
-      // 1. Check if user exists
-      const { data: userProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .single();
-
-      if (profileError || !userProfile) {
-        set({ error: 'Account not found. Please sign up.', loading: false });
-        return;
-      }
-
-      // 2. Try to sign in
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        set({ error: 'Incorrect password.', loading: false });
+        set({ error: 'Incorrect email or password', loading: false });
         return;
       }
-
       if (data.user) {
         await get().fetchUserProfile();
       }
     } catch (error) {
-      console.error('Login error:', error);
       set({ error: 'An error occurred while signing in. Please try again.' });
     } finally {
       set({ loading: false });
