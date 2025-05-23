@@ -87,25 +87,7 @@ const DashboardPage: React.FC = () => {
         </div>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardContent className="flex items-center py-6">
-                <div className="rounded-full bg-indigo-100 p-3 mr-4">
-                  <FileText size={24} className="text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Projects</p>
-                  <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

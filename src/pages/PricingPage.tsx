@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -76,6 +76,10 @@ const PricingPage: React.FC = () => {
     if (plan.price === 0 && user) return;
     navigate(`/payment/${plan.name.toLowerCase()}`);
   };
+
+  useEffect(() => {
+    console.log('Dashboard user credits:', user?.credits);
+  }, [user]);
 
   return (
     <div className="py-20 bg-gray-50">
@@ -169,7 +173,7 @@ const PricingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">What are credits?</h3>
               <p className="text-gray-600">
-                Credits are used each time you humanize a text. One credit allows you to humanize up to 1,000 characters. 
+                Credits are used each time you humanize a text or store files/Projects. Five credit allows you to humanize up to 1,000 characters and each file storage takes up 25 credits. 
                 Unused credits roll over to the next month, up to a maximum of 3x your monthly allowance.
               </p>
             </div>

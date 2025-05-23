@@ -25,9 +25,8 @@ const HumanizerTool: React.FC = () => {
       setError('Text must be at least 50 characters long.');
       return;
     }
-    await fetchUserProfile(); // Always get the latest credits
-    const latestUser = useAuthStore.getState().user;
-    if (!latestUser || latestUser.credits < 5) {
+    const userForCredits = useAuthStore.getState().user;
+    if (!userForCredits || userForCredits.credits < 5) {
       setError('You are out of credits. Please buy more to humanize text.');
       return;
     }
@@ -35,57 +34,16 @@ const HumanizerTool: React.FC = () => {
     setError(null);
     setOutputText('');
 
-    const API_URL = 'https://humanize.undetectable.ai';
-    const API_KEY = 'dd410c04-f157-4f4c-9e41-b7d125f2b339'; // TODO: Replace with your actual API key or use env
-
     try {
-      // 1. Submit document
-      const submitRes = await fetch(`${API_URL}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': API_KEY,
-        },
-        body: JSON.stringify({
-          content: inputText,
-          readability: 'High School',
-          purpose: 'General Writing',
-          strength: 'More Human',
-          model: 'v11',
-        }),
-      });
-      const submitData = await submitRes.json();
-      if (!submitRes.ok) throw new Error(submitData.error || 'Failed to submit document');
-      const docId = submitData.id;
-
-      // 2. Poll for result
-      let output = null;
-      for (let i = 0; i < 20; i++) { // Poll up to 20 times (about 2 minutes)
-        await new Promise(res => setTimeout(res, 7000)); // Wait 7 seconds
-        const docRes = await fetch(`${API_URL}/document`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': API_KEY,
-          },
-          body: JSON.stringify({ id: docId }),
-        });
-        const docData = await docRes.json();
-        if (docData.output) {
-          output = docData.output;
-          break;
-        }
-        if (docData.error) {
-          throw new Error(docData.error);
-        }
-      }
-      if (!output) throw new Error('Timed out waiting for humanized text');
-      setOutputText(output);
-      // Subtract 5 credits from user in Supabase using latest value
+      // Simulate API delay
+      await new Promise(res => setTimeout(res, 1000));
+      // Set dummy output
+      setOutputText('This is a dummy humanized output.');
+      // Subtract 5 credits from user in Supabase and update global state
       const { error: creditError } = await supabase
         .from('profiles')
-        .update({ credits: latestUser.credits - 5 })
-        .eq('id', latestUser.id);
+        .update({ credits: userForCredits.credits - 5 })
+        .eq('id', userForCredits.id);
       if (creditError) throw creditError;
       await fetchUserProfile();
       // Generate a title based on the first few words
