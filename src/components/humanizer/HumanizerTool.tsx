@@ -26,7 +26,11 @@ const HumanizerTool: React.FC = () => {
       return;
     }
     const userForCredits = useAuthStore.getState().user;
-    if (!userForCredits || userForCredits.credits < 5) {
+    if (!userForCredits) {
+      setError('Please log in to use the humanizer.');
+      return;
+    }
+    if (userForCredits.credits < 5) {
       setError('You are out of credits. Please buy more to humanize text.');
       return;
     }

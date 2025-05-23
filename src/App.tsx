@@ -22,9 +22,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, loading } = useAuthStore();
+  const { user, loading, initialized } = useAuthStore();
   
-  if (loading) {
+  // Show loading spinner while authentication is being initialized or during loading
+  if (!initialized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -32,15 +33,28 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
   
+  // Only redirect to login after we've confirmed there's no authenticated user
   return user ? <>{children}</> : <Navigate to="/login" />;
 };
 
 function App() {
-  const { fetchUserProfile } = useAuthStore();
+  const { fetchUserProfile, initialized } = useAuthStore();
   
   useEffect(() => {
-    fetchUserProfile();
-  }, [fetchUserProfile]);
+    // Only fetch user profile if not already initialized
+    if (!initialized) {
+      fetchUserProfile();
+    }
+  }, [fetchUserProfile, initialized]);
+  
+  // Show loading spinner while the initial authentication check is happening
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
   
   return (
     <Router>

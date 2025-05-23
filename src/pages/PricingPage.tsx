@@ -106,6 +106,13 @@ const PricingPage: React.FC = () => {
 
       if (data.user) {
         await get().fetchUserProfile();
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          localStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       set({ error: 'An error occurred while signing in. Please try again.' });

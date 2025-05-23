@@ -4,6 +4,7 @@ import { supabase, UserProfile } from '../lib/supabase';
 interface AuthState {
   user: UserProfile | null;
   loading: boolean;
+  initialized: boolean; // Added initialized state
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: false,
+  initialized: false, // Start with initialized as false
   error: null,
   
   login: async (email: string, password: string) => {
@@ -21,7 +23,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        set({ error: 'Incorrect email or password', loading: false });
+        set({ error: 'Incorrect email or password', loading: false, initialized: true });
         return;
       }
       if (data.user) {
@@ -30,7 +32,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       set({ error: 'An error occurred while signing in. Please try again.' });
     } finally {
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
   
@@ -54,7 +56,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (data.user && !data.user.email_confirmed_at) {
         set({ 
           error: null,
-          user: null 
+          user: null,
+          initialized: true
         });
         // You might want to show a message about email confirmation
         console.log('Please check your email to confirm your account');
@@ -63,9 +66,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch (error) {
       console.error('Signup error:', error);
-      set({ error: (error as Error).message });
+      set({ error: (error as Error).message, initialized: true });
     } finally {
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
   
@@ -74,31 +77,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      set({ user: null });
+      set({ user: null, initialized: true });
     } catch (error) {
       console.error('Logout error:', error);
-      set({ error: (error as Error).message });
+      set({ error: (error as Error).message, initialized: true });
     } finally {
-      set({ loading: false });
+      set({ loading: false, initialized: true });
     }
   },
   
   fetchUserProfile: async () => {
+    set({ loading: true }); // Set loading when starting to fetch
     try {
-      const { data: authData } = await supabase.auth.getUser();
-      
-      if (!authData.user) {
-        set({ user: null });
+      // Use getSession for more reliable session restoration
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        set({ user: null, loading: false, initialized: true });
         return;
       }
-      
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) {
+        set({ user: null, loading: false, initialized: true });
+        return;
+      }
       // First try to get existing profile
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
         .single();
-      
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist, create it
         const { data: newProfile, error: createError } = await supabase
@@ -111,13 +118,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }])
           .select()
           .single();
-        
         if (createError) {
-          console.error('Error creating profile:', createError);
-          set({ error: 'Failed to create user profile', user: null });
+          set({ error: 'Failed to create user profile', user: null, loading: false, initialized: true });
           return;
         }
-        
         set({ 
           user: {
             id: authData.user.id,
@@ -126,11 +130,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             credits: newProfile?.credits !== undefined && newProfile?.credits !== null ? newProfile.credits : 100,
             tier: newProfile?.tier || 'free',
             createdAt: newProfile?.created_at || new Date().toISOString()
-          } 
+          },
+          loading: false,
+          initialized: true
         });
       } else if (error) {
-        console.error('Error fetching profile:', error);
-        set({ error: error.message, user: null });
+        set({ error: error.message, user: null, loading: false, initialized: true });
       } else {
         set({ 
           user: {
@@ -140,12 +145,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             credits: profile?.credits !== undefined && profile?.credits !== null ? profile.credits : 100,
             tier: profile?.tier || 'free',
             createdAt: profile?.created_at || new Date().toISOString()
-          } 
+          },
+          loading: false,
+          initialized: true
         });
       }
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      set({ error: 'Failed to fetch user profile', user: null });
+      set({ error: 'Failed to fetch user profile', user: null, loading: false, initialized: true });
     }
   },
 }));
