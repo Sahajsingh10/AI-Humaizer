@@ -7,6 +7,7 @@ import Card, { CardContent, CardHeader, CardFooter } from '../components/ui/Card
 import Modal from '../components/ui/Modal';
 import PaymentForm from './payment/PaymentForm';
 import { useAuthStore } from '../store/authStore';
+import { supabase } from '../lib/supabase';
 
 interface PlanFeature {
   name: string;
@@ -70,7 +71,7 @@ const pricingPlans: PricingPlan[] = [
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, set, get } = useAuthStore();
 
   const handleGetStarted = (plan: PricingPlan) => {
     if (plan.price === 0 && user) return;
@@ -80,6 +81,38 @@ const PricingPage: React.FC = () => {
   useEffect(() => {
     console.log('Dashboard user credits:', user?.credits);
   }, [user]);
+
+  const login = async (email: string, password: string) => {
+    set({ loading: true, error: null });
+    try {
+      // 1. Check if user exists
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (profileError || !userProfile) {
+        set({ error: 'Account not found. Please sign up.' });
+        return;
+      }
+
+      // 2. Try to sign in
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        set({ error: 'Incorrect password.' });
+        return;
+      }
+
+      if (data.user) {
+        await get().fetchUserProfile();
+      }
+    } catch (error) {
+      set({ error: 'An error occurred while signing in. Please try again.' });
+    } finally {
+      set({ loading: false });
+    }
+  };
 
   return (
     <div className="py-20 bg-gray-50">
