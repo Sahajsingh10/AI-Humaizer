@@ -95,113 +95,120 @@ const HumanizerTool: React.FC = () => {
   };
   
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
       {/* Credits Tracker */}
-      <div className="col-span-2 mb-6 flex items-center justify-center">
+      <div className="mb-6 flex items-center justify-center">
         <div className="flex items-center bg-green-50 border border-green-200 rounded px-4 py-2">
           <span className="text-green-700 font-semibold mr-2">Credits:</span>
           <span className="text-green-900 font-bold text-lg">{user?.credits ?? 0}</span>
         </div>
       </div>
-      {/* Input Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col h-full"
-      >
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">Original Text</h2>
-        <p className="text-gray-600 mb-4">
-          Paste your AI-generated text here to humanize it.
-        </p>
-        
-        <div className="relative flex-grow">
-          <TextArea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter your text here..."
-            className="h-80 resize-none mb-4"
-            autoFocus={true}
-          />
-          
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              {inputText.length} characters
-            </div>
-            <Button
-              onClick={humanizeText}
-              disabled={!inputText.trim() || isHumanizing}
-              loading={isHumanizing}
-              icon={<ArrowRight size={16} />}
-              iconPosition="right"
-            >
-              Humanize
-            </Button>
-          </div>
-        </div>
-      </motion.div>
       
-      {/* Output Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col h-full"
-      >
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">Humanized Text</h2>
-        <p className="text-gray-600 mb-4">
-          Your humanized text will appear here.
-        </p>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-            {error}
-          </div>
-        )}
-        
-        <div className="relative flex-grow">
-          <TextArea
-            value={outputText}
-            onChange={(e) => setOutputText(e.target.value)}
-            placeholder="Humanized text will appear here..."
-            className="h-80 resize-none mb-4"
-            readOnly={!outputText}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* Input Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col"
+        >
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Original Text</h2>
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
+            Paste your AI-generated text here to humanize it.
+          </p>
           
-          {outputText && (
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">
-                {outputText.length} characters
+          <div className="relative flex-grow">
+            <TextArea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Enter your text here..."
+              className="h-48 sm:h-64 lg:h-80 resize-none mb-4"
+              autoFocus={true}
+            />
+            
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+              <div className="text-sm text-gray-500 order-2 sm:order-1">
+                {inputText.length} characters
               </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  icon={<RefreshCw size={16} />}
-                >
-                  Reset
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleCopy}
-                  icon={copySuccess ? <CheckCircle size={16} /> : <Copy size={16} />}
-                >
-                  {copySuccess ? 'Copied!' : 'Copy'}
-                </Button>
-                {user && (
-                  <Button
-                    onClick={handleSave}
-                    disabled={saveSuccess}
-                    icon={saveSuccess ? <CheckCircle size={16} /> : <Save size={16} />}
-                  >
-                    {saveSuccess ? 'Saved!' : 'Save'}
-                  </Button>
-                )}
-              </div>
+              <Button
+                onClick={humanizeText}
+                disabled={!inputText.trim() || isHumanizing}
+                loading={isHumanizing}
+                icon={<ArrowRight size={16} />}
+                iconPosition="right"
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
+                Humanize
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+        
+        {/* Output Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col"
+        >
+          <h2 className="text-xl font-semibold mb-2 text-gray-800">Humanized Text</h2>
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
+            Your humanized text will appear here.
+          </p>
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4 text-sm">
+              {error}
             </div>
           )}
-        </div>
-      </motion.div>
+          
+          <div className="relative flex-grow">
+            <TextArea
+              value={outputText}
+              onChange={(e) => setOutputText(e.target.value)}
+              placeholder="Humanized text will appear here..."
+              className="h-48 sm:h-64 lg:h-80 resize-none mb-4"
+              readOnly={!outputText}
+            />
+            
+            {outputText && (
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+                <div className="text-sm text-gray-500 order-2 sm:order-1">
+                  {outputText.length} characters
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                    icon={<RefreshCw size={16} />}
+                    className="w-full sm:w-auto"
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleCopy}
+                    icon={copySuccess ? <CheckCircle size={16} /> : <Copy size={16} />}
+                    className="w-full sm:w-auto"
+                  >
+                    {copySuccess ? 'Copied!' : 'Copy'}
+                  </Button>
+                  {user && (
+                    <Button
+                      onClick={handleSave}
+                      disabled={saveSuccess}
+                      icon={saveSuccess ? <CheckCircle size={16} /> : <Save size={16} />}
+                      className="w-full sm:w-auto"
+                    >
+                      {saveSuccess ? 'Saved!' : 'Save'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
